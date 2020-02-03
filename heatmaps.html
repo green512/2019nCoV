@@ -1524,59 +1524,39 @@ Date.prototype.format = function(fmt){
 
   return fmt;
 }
+  var convertDatas = function (datas,dates) {
+    var dataDate=datas[dates];
+      var res = [];
+      for (var i = 0; i < dataDate.length; i++) {
+          var cname=dataDate[i]["cname"];
+          var geoCoord = geoCoordMap[cname];
+          if (geoCoord) {
+              //console.log(datas[i],dates);
+              
+                res.push({
+                    name: cname,
+                    value: geoCoord.concat(dataDate[i]["confirmCount"])
+                });
+                  
+              }                  
 
-        var convertDatas = function (datas,dates) {
-            dataDate=datas[dates]
-            var res = [];
-            for (var i = 0; i < dataDate.length; i++) {
-                var cname=dataDate[i]["cname"];
-                var geoCoord = geoCoordMap[cname];
-                if (geoCoord) {
-                    //console.log(datas[i],dates);
-                    
-                      res.push({
-                          name: cname,
-                          value: geoCoord.concat(dataDate[i]["confirmCount"])
-                      });
-                        
-                    }                  
+      }
+      
+      //console.log(res);
+      return res;
+  }; 
 
-            }
-            
-            //console.log(res);
-            return res;
-        }; 
 
-    $.get('http://datanews.caixin.com/interactive/2020/iframe/pneumonia-new/data/pneumonia.csv',function(theData){
-        var dataset=[];
-        var dataLatestCity=[];
+        
         var dataList=[];
         var dataList2=[];
-        var dataDate=[];
-        var tdata=$.csv.toObjects(theData);
-        //console.log(tdata);
-        //遍历数组按城市分组
-        dataset.push([tdata[0]])
-        for(var i=1; i<tdata.length; i++){
-            var flag=0
-            for(var j=0; j<dataset.length; j++){
-            if(tdata[i]["显示地点"]==dataset[j][0]["显示地点"]) {
-                dataset[j].push(tdata[i])
-                flag=1
-            }
-            }
-            if(flag==0) dataset.push([tdata[i]])
-        }
-       // console.log(dataset)
         
-        // for(var i=0; i<dataset.length; i++){
-        //     var n=dataset[i].length
-        //     dataLatestCity.push(dataset[i][n-1])
-        // }
-        //console.log(dataLatestCity)
+        
+        
+        dates = Object.keys(DATAS)
         var today = new Date().format("yyyy/MM/dd");
-        var n=dataset[0].length;
-        var lastDate = dataset[0][n-1]["时间"];
+        var n=dates.length;
+        var lastDate = dates[n-1];
         //ts 相减的差值
         var ts = DateDiff(today, "2020/01/17");
         console.log(ts)
@@ -1720,7 +1700,6 @@ Date.prototype.format = function(fmt){
         if (option && typeof option === "object") {
             myChart.setOption(option, true);
         }
-    });
     
  
        </script>
