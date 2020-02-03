@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+   <head>
+       <meta charset="utf-8">
+   </head>
+   <body style="height: 100%; margin: 0">
+       <div id="container" style="height: 100%"></div>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=61fa03749e0a51515655830a1dedd290&__ec_v__=20190126"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+       <script type="text/javascript" src="./confirmed_world.js"></script>
+       <script type="text/javascript">
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+
+var geoCoordMap = {
+  "北京": [
+    116.395645,
+    39.929986
+  ],
+  "重庆": [
+    106.530635,
+    29.544606
+  ],
+  "上海": [
+    121.487899,
+    31.249162
+  ],
+  "天津": [
+    117.210813,
+    39.14393
+  ],  
+  "香港": [
+    114.173355,
+    22.320048
+  ],
+  "澳门": [
+    113.54909,
+    22.198951
+  ],  
+  "台湾": [
+    121.973871,
+    24.086957
+  ],
+  "河北": [
+    115.661434,
+    38.61384
+  ],
+  "山西": [
+    112.515496,
+    37.866566
+  ],
+  "内蒙古": [
+    114.415868,
+    43.468238
+  ],
+  "辽宁": [
+    122.753592,
+    41.6216
+  ],
+  "黑龙江": [
+    128.047414,
+    47.356592
+  ],
+  "江苏": [
+    119.368489,
+    33.013797
+  ],
+  "浙江": [
+    119.957202,
+    29.159494
+  ],
+  "安徽": [
+    117.216005,
+    31.859252
+  ],
+  "江西": [
+    115.676082,
+    27.757258
+  ],
+  "福建": [
+    117.984943,
+    26.050118
+  ],
+  "山东": [
+    118.527663,
+    36.09929
+  ],
+  "湖北": [
+    112.410562,
+    31.209316
+  ],
+  "湖南": [
+    111.720664,
+    27.695864
+  ],
+  "广东": [
+    113.394818,
+    23.408004
+  ],
+  "广西": [
+    108.924274,
+    23.552255
+  ],
+  "四川": [
+    102.89916,
+    30.367481
+  ],
+  "贵州": [
+    106.734996,
+    26.902826
+  ],
+  "云南": [
+    101.592952,
+    24.864213
+  ],
+  "甘肃": [
+    102.457625,
+    38.103267
+  ],
+  "青海": [
+    96.202544,
+    35.499761
+  ],
+  "宁夏": [
+    106.155481,
+    37.321323
+  ],
+  "陕西": [
+    109.503789,
+    35.860026
+  ],
+  "西藏": [
+    89.137982,
+    31.367315
+  ],
+  "新疆": [
+    85.614899,
+    42.127001
+  ],
+  "河南": [
+    113.649644,
+    34.75661
+  ],
+  "海南": [
+    110.330802,
+    20.022071
+  ],
+    "Angola":[17.87,-11.20],
+  "Afghanistan":[67.71,33.94],
+  "Albania":[20.17,41.15],
+  "Algeria":[1.66,28.03],
+  "Andorra":[1.52,42.51],
+  "Anguilla":[-63.07,18.22],
+  "Argentina":[-63.62,-38.42],
+  "Armenia":[45.04,40.07],
+  "Ascension":[-90.94,30.20],
+  "Australia":[133.78,-25.27],
+  "Austria":[14.55,47.52],
+  "Azerbaijan":[47.58,40.14],
+  "Bahamas":[-77.40,25.03],
+  "Bahrain":[50.56,26.07],
+  "Bangladesh":[90.36,23.68],
+  "Barbados":[-59.54,13.19],
+  "Belarus":[27.95,53.71],
+  "Belgium":[4.47,50.50],
+  "Belize":[-88.50,17.19],
+  "Benin":[2.32,9.31],
+  "Bermuda Is":[-64.75,32.31],
+  "Bolivia":[-63.59,-16.29],
+  "Botswana":[24.68,-22.33],
+  "Brazil":[-51.93,-14.24],
+  "Brunei":[114.73,4.54],
+  "Bulgaria":[25.49,42.73],
+  "Burkina-faso":[-1.56,12.24],
+  "Burma":[95.96,21.92],
+  "Burundi":[29.92,-3.37],
+  "Cameroon":[12.35,7.37],
+  "加拿大":[-106.35,56.13],
+  "Cayman Is":[-117.64,33.64],
+  "Central African Republic":[20.94,6.61],
+  "Chad":[18.73,15.45],
+  "Chile":[-71.54,-35.68],
+  "China":[104.20,35.86],
+  "柬埔寨":[-74.30,4.57],
+  "Congo":[15.83,-0.23],
+  "Cook Is":[-90.49,47.61],
+  "Costa Rica":[-83.75,9.75],
+  "Croatia":[15.2,45.1],
+  "Cuba":[-77.78,21.52],
+  "Cyprus":[33.43,35.13],
+  "Czech Republic":[15.47,49.82],
+  "Denmark":[9.50,56.26],
+  "Djibouti":[42.59,11.83],
+  "Dominica Rep":[-0.19,51.52],
+  "Ecuador":[-78.18,-1.83],
+  "Egypt":[30.80,26.82],
+  "EI Salvador":[-88.90,13.79],
+  "Estonia":[25.01,58.60],
+  "Ethiopia":[40.49,9.15],
+  "Fiji":[178.07,-17.71],
+  "芬兰":[25.75,61.92],
+  "法国":[2.21,46.23],
+  "French Guiana":[-53.13,3.93],
+  "Gabon":[11.61,-0.80],
+  "Gambia":[-15.31,13.44],
+  "Georgia":[-82.90,32.17],
+  "Germany":[10.45,51.17],
+  "Ghana":[-1.02,7.95],
+  "Gibraltar":[-5.35,36.14],
+  "Greece":[21.82,39.07],
+  "Grenada":[-61.68,12.12],
+  "Guam":[144.79,13.44],
+  "Guatemala":[-90.23,15.78],
+  "Guinea":[-9.70,9.95],
+  "Guyana":[-58.93,4.86],
+  "Haiti":[-72.29,18.97],
+  "Honduras":[-86.24,15.20],
+  "Hong Kong":[114.11,22.40],
+  "Hungary":[19.50,47.16],
+  "Iceland":[-19.02,64.96],
+  "印度":[78.96,20.59],
+  "Indonesia":[113.92,-0.79],
+  "Iran":[53.69,32.43],
+  "Iraq":[43.68,33.22],
+  "Ireland":[-8.24,53.41],
+  "Israel":[34.85,31.05],
+  "意大利":[12.57,41.87],
+  "Ivory Coast":[-5.55,7.54],
+  "Jamaica":[-77.30,18.11],
+  "Japan":[138.25,36.20],
+  "Jordan":[36.24,30.59],
+  "Kampuchea":[105.46,12.00],
+  "Kazakstan":[66.92,48.02],
+  "Kenya":[37.91,-0.02],
+  "Korea":[127.98,37.66],
+  "Kuwait":[47.48,29.31],
+  "Kyrgyzstan":[74.77,41.20],
+  "Laos":[102.50,19.86],
+  "Latvia":[24.60,56.88],
+  "Lebanon":[35.86,33.85],
+  "Lesotho":[28.23,-29.61],
+  "Liberia":[-9.43,6.43],
+  "Libya":[17.23,26.34],
+  "Liechtenstein":[9.56,47.17],
+  "Lithuania":[23.88,55.17],
+  "Luxembourg":[6.13,49.82],
+  "Macao":[113.54,22.20],
+  "Madagascar":[46.87,-18.77],
+  "Malawi":[34.30,-13.25],
+  "马来西亚":[101.98,4.21],
+  "Malpes":[73.54,1.98],
+  "Mali":[-4.00,17.57],
+  "Malta":[14.38,35.94],
+  "Mariana Is":[-43.41,-20.37],
+  "Martinique":[-61.02,14.64],
+  "Mauritius":[57.55,-20.35],
+  "Mexico":[-102.55,23.63],
+  "Monaco":[7.42,43.74],
+  "Mongolia":[103.85,46.86],
+  "Montserrat Is":[-62.19,16.74],
+  "Morocco":[-7.09,31.79],
+  "Mozambique":[35.53,-18.67],
+  "Namibia":[18.49,-22.96],
+  "Nauru":[166.93,-0.52],
+  "尼泊尔":[84.12,28.39],
+  "Netheriands Antilles":[-68.26,12.20],
+  "Netherlands":[5.29,52.13],
+  "New Zealand":[174.89,-40.90],
+  "Nicaragua":[-85.21,12.87],
+  "Niger":[8.08,17.61],
+  "Nigeria":[8.68,9.08],
+  "North Korea":[127.51,40.34],
+  "Norway":[8.47,60.47],
+  "Oman":[55.98,21.47],
+  "Pakistan":[69.35,30.38],
+  "Panama":[-80.78,8.54],
+  "Papua New Cuinea":[143.96,-6.31],
+  "Paraguay":[-58.44,-23.44],
+  "Peru":[-75.02,-9.19],
+  "菲律宾":[121.77,12.88],
+  "Poland":[19.15,51.92],
+  "French Polynesia":[-149.41,-17.68],
+  "Portugal":[-8.22,39.40],
+  "Puerto Rico":[-66.59,18.22],
+  "Qatar":[51.18,25.35],
+  "Reunion":[55.54,-21.12],
+  "Romania":[24.97,45.94],
+  "俄罗斯":[105.32,61.52],
+  "Saint Lueia":[-60.98,13.91],
+  "Saint Vincent":[7.64,45.75],
+  "Samoa Eastern":[-121.83,37.35],
+  "Samoa Western":[-124.15,40.80],
+  "San Marino":[12.46,43.94],
+  "Sao Tome and Principe":[6.61,0.19],
+  "Saudi Arabia":[45.08,23.89],
+  "Senegal":[-14.45,14.50],
+  "Seychelles":[55.49,-4.68],
+  "Sierra Leone":[-11.78,8.46],
+  "Singapore":[103.82,1.35],
+  "Slovakia":[19.70,48.67],
+  "Slovenia":[15.00,46.15],
+  "Solomon Is":[-97.37,38.92],
+  "Somali":[46.20,5.15],
+  "South Africa":[22.94,-30.56],
+  "西班牙":[-3.75,40.46],
+  "斯里兰卡":[80.77,7.87],
+  "St.Lucia":[-60.98,13.91],
+  "St.Vincent":[-91.06,29.99],
+  "Sudan":[30.22,12.86],
+  "Suriname":[-56.03,3.92],
+  "Swaziland":[31.47,-26.52],
+  "瑞典":[18.64,60.13],
+  "Switzerland":[8.23,46.82],
+  "Syria":[39.00,34.80],
+  "Taiwan":[120.96,23.70],
+  "Tajikstan":[71.28,38.86],
+  "Tanzania": [34.89, -6.37],
+  "Thailand": [100.99, 15.87],
+  "Togo": [0.82, 8.62],
+  "Tonga": [-175.20, -21.18],
+  "Trinidad and Tobago": [-61.22, 10.69],
+  "Tunisia": [9.54, 33.89],
+  "Turkey": [35.24, 38.96],
+  "Turkmenistan": [59.56, 38.97],
+  "Uganda": [32.29, 1.37],
+  "Ukraine": [31.17, 48.38],
+  "阿联酋": [53.85, 23.42],
+  "英国": [-3.44, 55.38],
+  "美国": [-95.71, 37.09],
+  "Uruguay": [-55.77, -32.52],
+  "Uzbekistan": [64.59, 41.38],
+  "Venezuela": [-66.59, 6.42],
+  "越南": [108.28, 14.06],
+  "Yemen": [48.52, 15.55],
+  "Yugoslavia": [121.02, 14.48],
+  "Zimbabwe": [29.15, -19.02],
+  "Zaire": [21.76, -4.04],
+  "Zambia": [27.85, -13.13]
+};
+    
+    var convertData = function (province) {
+    var res = [];
+    for (var i = 0; i < province.length; i++) {
+        var geoCoord = geoCoordMap[province[i].provinceShortName];
+        if (geoCoord) {
+            res.push({
+                name: province[i].provinceShortName,
+                value: geoCoord.concat(province[i].confirmedCount)
+            });
+        }
+    }
+    for (var i = 0; i < world.length; i++) {
+        var geoCoord = geoCoordMap[world[i].provinceName];
+        if (geoCoord) {
+            res.push({
+                name: world[i].provinceName,
+                value: geoCoord.concat(world[i].confirmedCount)
+            });
+        }
+    }
+    return res;
+    };
+
+option = {
+    title: {
+        text: '全球新冠肺炎疫情散点图',
+        subtext: 'data from 丁香园('+LAST_UPDATE+')',
+        sublink: 'https://3g.dxy.cn/newh5/view/pneumonia',
+        left: 'center'
+    },
+    tooltip : {
+        trigger: 'item',
+        formatter: function (params) {
+            return ' 确诊 '+params.value[2] + ' 例 ';
+        }
+
+    },
+    bmap: {
+        center: [80.114129, 37.550339],
+        zoom: 2,
+        roam: true,
+        mapStyle: {
+            styleJson: [{
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'land',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#f3f3f3'
+                }
+            }, {
+                'featureType': 'railway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#fdfdfd'
+                }
+            }, {
+                'featureType': 'highway',
+                'elementType': 'labels',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'arterial',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#fefefe'
+                }
+            }, {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#fefefe'
+                }
+            }, {
+                'featureType': 'poi',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'green',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'subway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'local',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'arterial',
+                'elementType': 'labels',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#fefefe'
+                }
+            }, {
+                'featureType': 'building',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'label',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#999999'
+                }
+            }]
+        }
+    },
+        visualMap: {
+            
+                min: 1,
+                max: 20000,
+                type: 'piecewise',
+                pieces: [
+                    {gt: 1000},            // (1000, Infinity]            
+                    {gt: 500, lte: 1000},  // (310, 1000]
+                    {gt: 100, lte: 500},   // (200, 300]
+                    {gt: 10, lte: 100},       // (10, 200]
+                    {ge: 1,lt: 10},                 // (-Infinity, 5)
+                    {lte: 0}
+                ],
+                inRange: {
+                    color: ['red','#f94e5d','#eac736','#ece25c','#ffffff'].reverse()
+                }
+        },
+    series : [
+        {
+            name: '2019-nCoV',
+            type: 'scatter',
+            coordinateSystem: 'bmap',
+            data: convertData(province),
+            symbolSize: 10,
+            label: {
+                formatter: '{b}',
+                position: 'right',
+                show: false
+            },
+            itemStyle: {
+                color: 'red'
+            },
+            emphasis: {
+                label: {
+                    show: true
+                }
+            }
+        },
+        {
+            name: 'Top 5',
+            type: 'effectScatter',
+            coordinateSystem: 'bmap',
+            data: convertData(province.sort(function (a, b) {
+                return b.value - a.value;
+            }).slice(0, 50)),
+            symbolSize: function (val) {
+                return val[2] / 200;
+            },
+            showEffectOn: 'render',
+            rippleEffect: {
+                brushType: 'stroke'
+            },
+            hoverAnimation: true,
+            label: {
+                formatter: '{b}',
+                position: 'right',
+                show: false
+            },
+            itemStyle: {
+                color: 'red',
+                shadowBlur: 10,
+                shadowColor: '#333'
+            },
+            zlevel: 1
+        }
+    ]
+};
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+       </script>
+   </body>
+</html>
