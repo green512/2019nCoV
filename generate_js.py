@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import csv
 import json
 import requests
@@ -55,6 +56,41 @@ def normalize_city_name(dxy_province_name, dxy_city_name):
     #if normalized_name != dxy_city_name:
     #  print('fuzz map', dxy_province_name, dxy_city_name, 'to', normalized_name)
     return normalized_name
+
+def load_dxy_data1():
+    url = 'https://3g.dxy.cn/newh5/view/pneumonia'
+    raw_html = requests.get(url).content.decode('utf8')
+    match = re.search('window.getListByCountryTypeService1 = (.*?)}catch', raw_html)
+    raw_json = match.group(1)
+    result = json.loads(raw_json, encoding='utf8')
+    return result
+
+def load_dxy_data2():
+    url = 'https://3g.dxy.cn/newh5/view/pneumonia'
+    raw_html = requests.get(url).content.decode('utf8')
+    match = re.search('window.getListByCountryTypeService2 = (.*?)}catch', raw_html)
+    raw_json = match.group(1)
+    result = json.loads(raw_json, encoding='utf8')
+    return result
+
+def write_world(result1,result2):
+    writer = open('confirmed_world.js', 'w', encoding='utf8')
+    writer.write('const LAST_UPDATE = "')
+    writer.write(datetime.datetime.now(datetime.timezone(
+        datetime.timedelta(hours=8))).strftime('%Y%m%d-%H:%M:%S'))
+    writer.write('"; \r\n')
+    writer.write("const province = ")
+    json.dump(result1, writer, indent='  ', ensure_ascii=False)
+    writer.write('; \r\n')
+    writer.write("const world = ")
+    json.dump(result2, writer, indent='  ', ensure_ascii=False)
+    writer.write('; \r\n')
+    writer.close()
+
+def load_dxy_data():
+    result1=load_dxy_data1()
+    result2=load_dxy_data2()
+    write_world(result1,result2)
 
 def write_result(result):
     writer = open('confirmed_datas.js', 'w', encoding='utf8')
@@ -150,11 +186,13 @@ def main():
     write_result(result)
     writer.close()
 
+
 if __name__ == '__main__':
     main()
+    load_dxy_data()
     #清空任务
     schedule.clear()
-    #创建一个按秒间隔执行任务
+    # #创建一个按秒间隔执行任务
     schedule.every(30).minutes.do(main)   
     while True:
         schedule.run_pending()
