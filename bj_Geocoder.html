@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<title>批量地址</title>
+	<style type="text/css">
+		body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#l-map{height:600px;width:100%;}
+		#r-result{width:100%; font-size:14px;line-height:20px;}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=61fa03749e0a51515655830a1dedd290"></script>
+</head>
+<body>
+	<div id="l-map"></div>
+	<div id="r-result">
+		<input type="button" value="批量地址解析" onclick="bdGEO()" />
+		<div id="result"></div>
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+	// 百度地图API功能
+	var map = new BMap.Map("l-map");
+	map.centerAndZoom(new BMap.Point(116.397026,39.918058), 10);
+	map.enableScrollWheelZoom(true);
+	var index = 0;
+	var myGeo = new BMap.Geocoder();
+	var adds = [
+		"朝阳区望京西园一区",
+        "房山区天瑞嘉园",
+        "朝阳区华腾园",
+        "海淀区观景园",
+        "大兴区玉璟园",
+        "朝阳区北苑一号院",
+        "朝阳区林萃路10号院",
+        "东城区崇文门东大街6号楼",
+        "海淀区西二旗空研BD院",
+        "丰台区怡锦园",
+        "丰台区远洋自然",
+        "昌平区回龙观龙锦苑",
+        "朝阳区澳林春天",
+        "海淀区海淀百旺茉莉园",
+        "丰台区丰台万年花城"
+	];
+	function bdGEO(){
+		if (index < adds.length) {
+			var add = adds[index];
+			geocodeSearch(add);
+			index++;
+		}
+	}
+	function geocodeSearch(add){
+		if(index < adds.length){
+			setTimeout(window.bdGEO,200);
+		} 
+		myGeo.getPoint(add, function(point){
+			if (point) {
+				document.getElementById("result").innerHTML +=  index + "," + add + "," + point.lng + "," + point.lat + "</br>";
+				var address = new BMap.Point(point.lng, point.lat);
+				addMarker(address,new BMap.Label(index+":"+add,{offset:new BMap.Size(20,-10)}));
+			}
+		}, "北京市");
+	}
+	// 编写自定义函数,创建标注
+	function addMarker(point,label){
+		var marker = new BMap.Marker(point);
+		map.addOverlay(marker);
+		marker.setLabel(label);
+    }
+    bdGEO();
+</script>
