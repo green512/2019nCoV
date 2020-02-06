@@ -3,18 +3,31 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-	<title>批量地址</title>
+	<title>北京病例活动过区域</title>
 	<style type="text/css">
 		body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
 		#l-map{height:600px;width:100%;}
 		#r-result{width:100%; font-size:14px;line-height:20px;}
 	</style>
+	<script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?c94964d386a4205ea05ef308c7feeb4a";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
 	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=61fa03749e0a51515655830a1dedd290"></script>
 </head>
 <body>
+	<p style="text-align:center; width: 100%"><h1 id='title' style="text-align:center; width: 100%">北京新冠肺炎病例活动过区域图</h1>
+		<h3 id='title1' style="text-align:center; width: 100%"><a style="text-align:center; width: 100%" href="index.html">返回全国页面</a></h3>
+		<h3 id='title1' style="text-align:center; width: 100%"><a style="text-align:center; width: 100%" href="110000.html">查看北京疫情页面</a></h3>
+	</p>
 	<div id="l-map"></div>
 	<div id="r-result">
-		<input type="button" value="批量地址解析" onclick="bdGEO()" />
+		<input type="button" value="活动过区域" onclick="bdGEO()" />
 		<div id="result"></div>
 	</div>
 </body>
@@ -41,7 +54,14 @@
         "昌平区回龙观龙锦苑",
         "朝阳区澳林春天",
         "海淀区海淀百旺茉莉园",
-        "丰台区丰台万年花城"
+		"丰台区丰台万年花城",
+		"东城区体育馆路街道驹章胡同",
+		"西城区月坛街道复兴门外大街甲20号","西城区展览路街道南营房社区","朝阳区来广营乡筑华年",
+		"朝阳区东坝乡恒大江湾",		"朝阳区慈云寺北里",		"朝阳区北苑路86号嘉铭园",		"朝阳区高碑店乡陶家湾",
+		"海淀区北太平庄街道新街口外大街15号院",		"海淀区紫竹院街道民族大学西路66号鑫德家园",
+		"石景山区玉泉北里2区",		"石景山区八宝山街道鲁谷远洋山水",		"石景山区五里坨街道西街天翠阳光新城",
+		"大兴区黄村镇格林云墅",		"大兴区瀛海镇金茂悦北区5号院",		"大兴区观音寺街道双河南里",
+		"怀柔区庙城镇郑重庄村"
 	];
 	function bdGEO(){
 		if (index < adds.length) {
@@ -56,9 +76,11 @@
 		} 
 		myGeo.getPoint(add, function(point){
 			if (point) {
-				document.getElementById("result").innerHTML +=  index + "," + add + "," + point.lng + "," + point.lat + "</br>";
+				//document.getElementById("result").innerHTML +=  index + "," + add + "," + point.lng + "," + point.lat + "</br>";
 				var address = new BMap.Point(point.lng, point.lat);
-				addMarker(address,new BMap.Label(index+":"+add,{offset:new BMap.Size(20,-10)}));
+				
+				addshort=add.substr(add.length-6,6)
+				addMarker(address,new BMap.Label(index+":"+addshort,{offset:new BMap.Size(20,-10)}));
 			}
 		}, "北京市");
 	}
