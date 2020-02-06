@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="./demo-center.css">
+    <link rel="stylesheet" href="./src/loading.css">
+     <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        a{
+            color:#f0f2ff
+        }
+        .top {
+            padding: .75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: .25rem;
+            position: fixed;
+            top: 10rem;
+            background-color: white;
+            width: auto;
+            /* min-width: 22rem; */
+            border-width: 0;
+            right: 1rem;
+            box-shadow: 0 2px 6px 0 rgba(114, 124, 245, .5);
+        }
+        
+    </style>
+     <style>
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: transparent;
+            background-color: #f5eeee;
+            border-radius: 5px;
+            /*box-shadow: 0 0 5px rgba(0, 0, 0, 0.9);*/
+        }
+
+        .legend ul {
+            padding: 5px 20px;
+            margin: 0;
+            list-style: none;
+        }
+
+        .color-item {
+            width: 47px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        .label-item {
+            color: #333;
+            display: inline-block;
+            width: 47px;
+            text-align: center;
+            margin-left: -1px;
+            font-size: 14px;
+        }
+    </style>
+    <style>
+        .amap-info-content.amap-info-outer {
+            background-color: #27272b;
+            color: #f0f2ff;
+            width: 100px;
+        }
+        .bottom-center .amap-info-sharp {
+            border-top: 8px solid #27272b;
+        }
+        .bottom-center button {
+          border: none;
+          color: #2181ff;
+          float: right;
+          background: transparent;
+        }
+        .amap-info-close {
+          color: #606166;
+        }
+      </style>
+    <title>新冠肺炎地级市疫情图</title>
+    <script type="text/javascript" src="../pneumonia/confirmed_data.js"></script>
+    <script type="text/javascript" src="./citys.js"></script>
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?c94964d386a4205ea05ef308c7feeb4a";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+</head>
+<body>
+<p style="text-align:center; width: 100%"><h1 id='title' style="text-align:center; width: 100%">新冠肺炎地级市疫情图</h1>
+    <h3 id='title1' style="text-align:center; width: 100%">数据来源：卫健委、丁香园</h3>
+    <h3 id='title1' style="text-align:center; width: 100%"></h3></p>
+
+ <div id="container" class="container"></div>
+ <div class="top">
+    <button id="showData" class="btn" >查看数据</button>
+    <a href='dataset-link.html'><button id="showFigure" class="btn">趋势图</button></a>
+    <a href='index.html'><button id="showHB" class="btn">散点图</button></a>
+    <a href='heatmap.html'><button id="showHeatmap" class="btn">热力图</button></a>  
+    <select name="code-list"  onchange="showLink(this.value)">
+        <option selected value="">区县疫情</option>
+        <option value="110000.html">北京区县</option>
+        <option value="120000.html">天津区县</option>
+        <option value="310000.html">上海区县</option>
+        <option value="420900.html">孝感区县</option>
+    </select>
+</div>
+<!-- 图例 -->
+<div class="legend">
+    <ul class="colors" id="legend-color">
+
+        <li class="color-item" style="background-color: #ffffff"></li>
+        <li class="color-item" style="background-color: #F08E7E"></li>
+        <li class="color-item" style="background-color: #E04B49"></li>
+        <li class="color-item" style="background-color: #73181B"></li>
+        <li class="color-item" style="background-color: #430c0e"></li></ul>
+    <ul class="labels" id="legend-label" style="padding: 0">
+        <li class="label-item">0</li>
+        <li class="label-item">1</li>
+        <li class="label-item">10</li>
+        <li class="label-item">100</li>
+        <li class="label-item">1000</li>
+    </ul>
+</div>
+
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=f9686a37f49c66279a2f7ac724cadda7&plugin=Map3D,AMap.DistrictLayer,AMap.Scale,AMap.ToolBar"></script>
+<script src="https://a.amap.com/Loca/static/mock/adcodes.js"></script>
+
+<script src="./src/jquery-1.11.2.js"></script>
+<script src="./src/loading.js"></script>
+<script>
+
+    document.getElementById('title1').innerHTML +=  '（' + LAST_UPDATE + '）';
+
+    var map = new AMap.Map("container", {
+        zoom: 5,
+        center: [108, 34],
+        pitch: 0,
+        viewMode: '3D',
+        mapStyle: "amap://styles/whitesmoke"
+        //zoomEnable:false,
+        //dragEnable: false,
+    });
+
+    
+    var infoWin;
+
+    infoWin = new AMap.InfoWindow({
+        closeWhenClickMap: true
+    });
+
+    var disChongqing = new AMap.DistrictLayer.Province({
+        zIndex: 12,
+        adcode: ["500000"],
+        depth: 2,
+        styles: {
+            'fill': function (properties) {
+                return DATA[properties.adcode]['color']
+            },
+            'province-stroke': 'cornflowerblue',
+            'city-stroke': 'white', // 中国地级市边界
+            'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+        }
+    });
+
+    disChongqing.setMap(map);
+
+    var disBeijing = new AMap.DistrictLayer.Province({
+        zIndex: 13,
+        adcode: ['110000','120000','310000'],
+        depth: 2,
+        styles: {
+            'fill': function (properties) {
+                return DATA[properties.adcode]['color']
+            },
+            'province-stroke': 'cornflowerblue',
+            'city-stroke': 'white', // 中国地级市边界
+            'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+             
+        },
+        text: {
+            content:function (properties) {
+                return DATA[properties.adcode]['confirmedCount']
+            }
+        }
+
+    });
+
+    
+
+    // 创建省份图层
+    // 排除重庆(500000)
+    var all_provinces = ['110000', '120000', '130000', '140000', '150000', '210000', '220000', '230000', '310000', '320000', '330000', '340000', '350000', '360000', '370000', '410000', '420000', '430000', '440000', '450000', '460000', '510000', '520000', '530000', '540000', '610000', '620000', '630000', '640000', '650000', '710000', '810000', '820000'];
+    var disProvince = new AMap.DistrictLayer.Province({
+        zIndex: 12,
+        adcode: all_provinces,
+        depth: 1,
+        eventSupport: true,
+         styles: {
+            'fill': function (properties) {
+                return DATA[properties.adcode]['color']
+            },
+            'province-stroke': 'cornflowerblue',
+            'city-stroke': 'white', // 中国地级市边界
+            'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+        }
+    });
+
+    disProvince.setMap(map);
+
+    
+
+    var load = new Loading();
+    load.init({
+        target: "#container"
+    });
+    load.start();
+    // setTimeout(function() {
+    //     load.stop();
+    // }, 3000)
+    disProvince.on('complete', function () {
+        load.stop();
+    });
+
+    layer = new AMap.LabelsLayer({
+      fitView: true
+      //map: map
+    });
+    map.add(layer);
+
+    map.on('click', function (ev) {
+        var px = ev.pixel;
+        var lnglat = ev.lnglat;
+        // 拾取所在位置的行政区
+        var props = disProvince.getDistrictByContainerPos(px);
+        if (!props) {
+            props = disChongqing.getDistrictByContainerPos(px);
+        }
+        if (props) {
+            var SOC = props.SOC;
+            if(SOC){
+                
+                updateInfo(props,lnglat);
+            }          
+            
+            //}
+        }
+    });
+    function updateInfo(props,lnglat) {
+        infoWin.open(map, lnglat);
+        console.log(props);
+
+        var content = [
+            '<a href="'+props.adcode+'.html">' + DATA[props.adcode]['cityName']+'</a>',
+            '<br>',
+            '确诊数：' + DATA[props.adcode]['confirmedCount'],
+            '<br>',
+            '死亡数：' + DATA[props.adcode]['deadCount']
+        ];
+        infoWin.setContent(content.join(''));
+    }
+    
+    function name2lnglat(name){
+        for (let i = 0; i < citys.length; i++) {
+            if (citys[i]['name']== name){
+                return citys[i]['lnglat']
+            }
+        }
+    }
+    
+    // 事件绑定
+    function showData(){
+        disBeijing.setMap(map);
+        for (x in DATA){
+            // 创建纯文本标记
+            cname=DATA[x]['cityName']
+            //console.log(cname)
+            if(DATA[x]['cityName']=='台湾') cname='台北市'
+            if(DATA[x]['color']=='#FFFFFF') continue
+            lnglat=name2lnglat(cname)            
+            tcontent = DATA[x]['confirmedCount']
+            if(cname =='北京市' || cname =='上海市' ||cname == '天津市'){
+                lnglat=[lnglat[0],lnglat[1]-0.02];
+                tcontent = cname+':'+DATA[x]['confirmedCount'];
+            }
+            var text = new AMap.Text({
+                text: tcontent,
+                anchor:'center', // 设置文本标记锚点    
+                opacity: 0.9,
+                style:{
+                    'background-color': DATA[x]['color'],
+                    'border-width': 0,           
+                    'text-align': 'center',
+                    'font-size': '10px',
+                    'color': 'white'
+                },
+                position: lnglat
+            });
+
+            text.setMap(map);
+        }
+    }
+    
+    // 查看湖北事件绑定
+    function showHB(){
+        var zoom = 7;
+        var lng = 112.204;
+        var lat = 31.035;
+        map.setZoomAndCenter(zoom, [lng, lat]); //同时设置地图层级与中心点
+        showData();
+    }
+
+    function showLink(link){
+        window.location.href=link;
+    }
+    // 给按钮绑定事件
+    document.getElementById("showData").onclick = showData;
+    document.getElementById("showHB").onclick = showHB;
+    // var addresses = new Array();
+    // var i=0;
+    // for (x in DATA) {
+    //     var curData = DATA[x];
+    //     //var marker = new AMap.Marker();
+    //     var address  = DATA[x]['cityName'];
+    //     addresses[i] = address;
+    //     i++;             
+        
+    // } 
+    // geocoder.getLocation(addresses, function(status, result) {
+    //         if (status === 'complete'&&result.geocodes.length) {
+    //             for(var i=0;i<result.geocodes.length;i+=1){
+    //                 var  marker = new AMap.Marker({
+    //                     position: result.geocodes[i].location
+    //                 });
+    //                 markers.push(marker);
+    //             }
+    //             map.add(markers);
+    //             //map.setFitView(markers);
+    //         }
+    //     });
+    
+</script>
+</body>
+</html>

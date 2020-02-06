@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+     <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+     <style>
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: transparent;
+            background-color: #f5eeee;
+            border-radius: 5px;
+            /*box-shadow: 0 0 5px rgba(0, 0, 0, 0.9);*/
+        }
+
+        .legend ul {
+            padding: 5px 20px;
+            margin: 0;
+            list-style: none;
+        }
+
+        .color-item {
+            width: 47px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        .label-item {
+            color: #333;
+            display: inline-block;
+            width: 47px;
+            text-align: center;
+            margin-left: -1px;
+            font-size: 14px;
+        }
+    </style>
+    <style>
+        .amap-info-content.amap-info-outer {
+            background-color: #27272b;
+            color: #f0f2ff;
+            width: 100px;
+        }
+        .bottom-center .amap-info-sharp {
+            border-top: 8px solid #27272b;
+        }
+        .bottom-center button {
+          border: none;
+          color: #2181ff;
+          float: right;
+          background: transparent;
+        }
+        .amap-info-close {
+          color: #606166;
+        }
+      </style>
+    <title>孝感新冠肺炎疫情图</title>
+    <script type="text/javascript" src="../pneumonia/confirmed_xiaogan.js"></script>
+    <script type="text/javascript" src="./citys.js"></script>
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?c94964d386a4205ea05ef308c7feeb4a";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+</head>
+<body>
+<p style="text-align:center; width: 100%"><h1 id='title' style="text-align:center; width: 100%">孝感新冠肺炎疫情图</h1>
+    <h3 id='title1' style="text-align:center; width: 100%"><a style="text-align:center; width: 100%" href="index.html">返回全国页面</a></h3>
+    </p>
+
+<div id="container" class="container"></div>
+<!-- 图例 -->
+<div class="legend">
+    <ul class="colors" id="legend-color">
+
+        <li class="color-item" style="background-color: #ffffff"></li>
+        <li class="color-item" style="background-color: #F08E7E"></li>
+        <li class="color-item" style="background-color: #E04B49"></li>
+        <li class="color-item" style="background-color: #73181B"></li>
+        <li class="color-item" style="background-color: #430c0e"></li></ul>
+    <ul class="labels" id="legend-label" style="padding: 0">
+        <li class="label-item">0</li>
+        <li class="label-item">1</li>
+        <li class="label-item">10</li>
+        <li class="label-item">100</li>
+        <li class="label-item">1000</li>
+    </ul>
+</div>
+
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=f9686a37f49c66279a2f7ac724cadda7&plugin=AMap.Geocoder,Map3D,AMap.DistrictLayer,AMap.Scale,AMap.ToolBar"></script>
+<script src="https://webapi.amap.com/loca?v=1.3.0&key=f9686a37f49c66279a2f7ac724cadda7"></script>
+<script src="https://a.amap.com/Loca/static/mock/adcodes.js"></script>
+<script src="https://a.amap.com/Loca/static/dist/jquery.min.js"></script>
+<script>
+
+    document.getElementById('title1').innerHTML +=  '（更新于 ' + LAST_UPDATE + '）';
+
+    var map = new AMap.Map("container", {
+        zoom: 9,
+        center: [113.75,31.021],
+        pitch: 0,
+        viewMode: '3D',
+        mapStyle: "amap://styles/whitesmoke"
+        //zoomEnable:false,
+        //dragEnable: false,
+    });
+
+    
+    var infoWin;
+
+    infoWin = new AMap.InfoWindow({
+        closeWhenClickMap: true
+    });
+
+    var disBeijing = new AMap.DistrictLayer.Province({
+        zIndex: 12,
+        adcode: ['420900'],
+        depth: 2,
+        styles: {
+            'fill': function (properties) {
+                return DATA[properties.adcode]['color']
+            },
+            'province-stroke': 'cornflowerblue',
+            'city-stroke': 'white', // 中国地级市边界
+            'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+             
+        },
+        text: {
+            content:function (properties) {
+                return DATA[properties.adcode]['confirmedCount']
+            }
+        }
+
+    });
+
+    
+
+    disBeijing.setMap(map);
+
+    function name2lnglat(name){
+        for (let i = 0; i < citys.length; i++) {
+            if (citys[i]['name']== name){
+                return citys[i]['lnglat']
+            }
+        }
+    }
+    for (x in DATA){
+        // 创建纯文本标记
+        console.log(DATA[x]['confirmedCount'])
+        lnglat=name2lnglat(DATA[x]['cityName'])
+        var text = new AMap.Text({
+            text: DATA[x]['cityName']+':'+DATA[x]['confirmedCount'],
+            anchor:'center', // 设置文本标记锚点    
+        opacity: 1,
+            style:{
+                'background-color': DATA[x]['color'],
+                'border-width': 0,           
+                'text-align': 'center',
+                'font-size': '12px',
+                'color': 'white'
+            },
+            position: lnglat
+        });
+
+        text.setMap(map);
+    }
+    
+    
+    
+    map.on('click', function (ev) {
+        var px = ev.pixel;
+        var lnglat = ev.lnglat;
+        // 拾取所在位置的行政区
+        var props = disBeijing.getDistrictByContainerPos(px);
+
+        if (props) {
+            var SOC = props.SOC;
+            if(SOC){
+                
+                updateInfo(props,lnglat);
+            }          
+            
+        }
+    });
+    function updateInfo(props,lnglat) {
+        infoWin.open(map, lnglat);
+        console.log(props);
+
+        var content = [
+            '' + props.NAME_CHN,
+            '<br>',
+            '确诊数：' + DATA[props.adcode]['confirmedCount'],
+            '<br>',
+            '死亡数：' + DATA[props.adcode]['deadCount']
+        ];
+        infoWin.setContent(content.join(''));
+    }
+    
+    // var addresses = new Array();
+    // var i=0;
+    // for (x in DATA) {
+    //     var curData = DATA[x];
+    //     //var marker = new AMap.Marker();
+    //     var address  = DATA[x]['cityName'];
+    //     addresses[i] = address;
+    //     i++;             
+        
+    // } 
+    
+    
+</script>
+</body>
+</html>
