@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>北京病例活动过区域</title>
+	<link rel="stylesheet" href="demo-center.css"/>
 	<style type="text/css">
 		body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
 		#l-map{height:600px;width:100%;}
@@ -19,24 +20,36 @@
         })();
         </script>
 	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=61fa03749e0a51515655830a1dedd290"></script>
+	<script type="text/javascript" src="./confirmed_places.js"></script>
 </head>
 <body>
 	<p style="text-align:center; width: 100%"><h1 id='title' style="text-align:center; width: 100%">北京新冠肺炎病例活动过区域图</h1>
-		<h3 id='title1' style="text-align:center; width: 100%"><a style="text-align:center; width: 100%" href="index.html">返回全国页面</a></h3>
-		<h3 id='title1' style="text-align:center; width: 100%"><a style="text-align:center; width: 100%" href="110000.html">查看北京疫情页面</a></h3>
-	</p>
+		<h3 id='title1' style="text-align:center; width: 100%"><a style="text-align:center; width: 100%" href="index.html">返回全国页面</a>
+			<a style="text-align:center; margin:0,20; width: 100%" href="110000.html">查看北京疫情页面</a></h3>
+		
+		<h3 id='title1' style="text-align:center; width: 100%">*确诊病例已收入定点医院进行救治，居民不用担心和焦虑。</h3>
+	</p><p  style="text-align:center; width: 100%">地址：<input type="text" id="myAdd" />
+		
+		<input type="button" value="查看附近" onclick="myLocation()" />
+		<div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div></p>
 	<div id="l-map"></div>
-	<div id="r-result">
-		<input type="button" value="活动过区域" onclick="bdGEO()" />
-		<div id="result"></div>
+	<div id="r-result">		
+		<div id="result">
+		</div>
 	</div>
 </body>
 </html>
 <script type="text/javascript">
+
 	// 百度地图API功能
+
+	function G(id) {
+		return document.getElementById(id);
+	}
 	var map = new BMap.Map("l-map");
 	map.centerAndZoom(new BMap.Point(116.397026,39.918058), 10);
 	map.enableScrollWheelZoom(true);
+	map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_SMALL}));//缩放平移控件
 	var index = 0;
 	var myGeo = new BMap.Geocoder();
 	var adds = [
@@ -46,49 +59,174 @@
         "海淀区观景园",
         "大兴区玉璟园",
         "朝阳区北苑一号院",
-        "朝阳区林萃路10号院",
         "东城区崇文门东大街6号楼",
-        "海淀区西二旗空研BD院",
-        "丰台区怡锦园",
-        "丰台区远洋自然",
-        "昌平区回龙观龙锦苑",
-        "朝阳区澳林春天",
-        "海淀区海淀百旺茉莉园",
-		"丰台区丰台万年花城",
-		"东城区体育馆路街道驹章胡同",
-		"西城区月坛街道复兴门外大街甲20号","西城区展览路街道南营房社区","朝阳区来广营乡筑华年",
-		"朝阳区东坝乡恒大江湾",		"朝阳区慈云寺北里",		"朝阳区北苑路86号嘉铭园",		"朝阳区高碑店乡陶家湾",
-		"海淀区北太平庄街道新街口外大街15号院",		"海淀区紫竹院街道民族大学西路66号鑫德家园",
-		"石景山区玉泉北里2区",		"石景山区八宝山街道鲁谷远洋山水",		"石景山区五里坨街道西街天翠阳光新城",
-		"大兴区黄村镇格林云墅",		"大兴区瀛海镇金茂悦北区5号院",		"大兴区观音寺街道双河南里",
-		"怀柔区庙城镇郑重庄村"
+        "海淀区西二旗空研BD院"
 	];
+	var province='北京市';
+    function getData(){
+        let addrs = [];
+        for(p in PLACES){         
+            if (PLACES[p][province] ==null )
+                continue 
+            community=PLACES[p][province]  
+            district = Object.keys(PLACES[p][province])            
+            for(let i = 0; i< district.length; i++){
+                let singleComm = community[district[i]];
+                for(let j = 0;j < singleComm.length; j++){
+                    const {
+                        lng, lat, community: community2
+                    } = singleComm[j];
+                    addrs.push({lng, lat, community: community2});
+                }
+            }
+            //console.log(PLACES[p]['上海市']);
+                
+        }
+        //console.log(addrs);
+        return addrs;
+    }
+	var idx=0;
 	function bdGEO(){
-		if (index < adds.length) {
-			var add = adds[index];
+		
+		if (idx < adds.length) {
+			var add = adds[idx];
 			geocodeSearch(add);
-			index++;
+			idx++;
 		}
+
 	}
+
 	function geocodeSearch(add){
 		if(index < adds.length){
-			setTimeout(window.bdGEO,200);
+			setTimeout(window.bdGEO,100);
 		} 
 		myGeo.getPoint(add, function(point){
 			if (point) {
 				//document.getElementById("result").innerHTML +=  index + "," + add + "," + point.lng + "," + point.lat + "</br>";
 				var address = new BMap.Point(point.lng, point.lat);
 				
-				addshort=add.substr(add.length-6,6)
-				addMarker(address,new BMap.Label(index+":"+addshort,{offset:new BMap.Size(20,-10)}));
+				addshort=add//.substr(add.length-4,4)
+				addMarker(address,new BMap.Label(addshort,{offset:new BMap.Size(20,-10)}));
 			}
 		}, "北京市");
 	}
 	// 编写自定义函数,创建标注
 	function addMarker(point,label){
-		var marker = new BMap.Marker(point);
+		var myIcon = new BMap.Icon("./lbs_virus.png", new BMap.Size(20, 25), {  
+                        anchor: new BMap.Size(20, 25)
+                    }); 
+		var marker = new BMap.Marker(point, {icon: myIcon});
 		map.addOverlay(marker);
 		marker.setLabel(label);
-    }
-    bdGEO();
+	}
+	var iadds =getData();
+		for (index=0; index < iadds.length; index++) {
+			var iadd = iadds[index];
+            addshort=iadd["community"]
+             
+            //var address = new BMap.Point(iadd["lng"],iadd["lat"]);          
+            //lable=new BMap.Label(addshort,{offset:new BMap.Size(20,-10)});
+			//addMarker(address,lable);
+			if (addshort !="" ){
+				adds.push(addshort)
+			}else{
+				var address = new BMap.Point(iadd["lng"],iadd["lat"]);          
+				lable=new BMap.Label(addshort,{offset:new BMap.Size(20,-10)});
+				addMarker(address,lable);
+			}
+		}
+	bdGEO();
+	var x=document.getElementById("result");
+	function getLocation()
+	{
+		// if (navigator.geolocation)
+		// 	{
+		// 	navigator.geolocation.getCurrentPosition(showPosition);
+		// 	}
+		// else{x.innerHTML="Geolocation is not supported by this browser.";}
+		var geolocation = new BMap.Geolocation();
+		geolocation.getCurrentPosition(function(r){
+			if(this.getStatus() == BMAP_STATUS_SUCCESS){
+				var mk = new BMap.Marker(r.point);
+				map.addOverlay(mk);
+				map.panTo(r.point);
+				console.log('您的位置：'+r.point.lng+','+r.point.lat);
+			}
+			else {
+				console.log('failed'+this.getStatus());
+			}        
+		},{enableHighAccuracy: true})
+
+	}
+	function showPosition(position)
+	{
+		x.innerHTML="Latitude: " + position.coords.latitude + 
+		",Longitude: " + position.coords.longitude;	
+		console.log("Latitude: " + position.coords.latitude + 
+		",Longitude: " + position.coords.longitude);
+	}
+	function myLocation()
+	{
+		var add=document.getElementById("myAdd").value;
+		myGeo.getPoint(add, function(point){
+			if (point) {
+				//document.getElementById("result").innerHTML +=  index + "," + add + "," + point.lng + "," + point.lat + "</br>";
+				var address = new BMap.Point(point.lng, point.lat);
+				//map.panTo(point);
+				console.log('您的位置：'+point.lng+','+point.lat);
+				map.centerAndZoom(point, 14);
+				//addshort=add.substr(add.length-4,4)
+				// var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25), {  
+                //         offset: new BMap.Size(10, 25), // 指定定位位置  
+                //         imageOffset: new BMap.Size(2, 10 - 10 * 25) // 设置图片偏移  
+                //     });  
+				
+				// addMarker(address,new BMap.Label(add,{offset:new BMap.Size(20,-10)}), {icon: myIcon});
+			}
+		}, "北京市");
+	}
+	var ac = new BMap.Autocomplete(    //建立一个自动完成的对象
+		{"input" : "myAdd"
+		,"location" : map
+	});
+
+	ac.addEventListener("onhighlight", function(e) {  //鼠标放在下拉列表上的事件
+	var str = "";
+		var _value = e.fromitem.value;
+		var value = "";
+		if (e.fromitem.index > -1) {
+			value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+		}    
+		str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+		
+		value = "";
+		if (e.toitem.index > -1) {
+			_value = e.toitem.value;
+			value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+		}    
+		str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+		G("searchResultPanel").innerHTML = str;
+	});
+
+	var myValue;
+	ac.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+	var _value = e.item.value;
+		myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+		G("searchResultPanel").innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+		
+		setPlace();
+	});
+
+	function setPlace(){
+		//map.clearOverlays();    //清除地图上所有覆盖物
+		function myFun(){
+			var pp = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
+			map.centerAndZoom(pp, 14);
+			//map.addOverlay(new BMap.Marker(pp));    //添加标注
+		}
+		var local = new BMap.LocalSearch(map, { //智能搜索
+		  onSearchComplete: myFun
+		});
+		local.search(myValue);
+	}
 </script>
