@@ -7,6 +7,7 @@ import requests
 import time  # 引入time模块
 import datetime
 import schedule
+from urllib.request import Request
 
 
 def load_amap_cities():
@@ -24,6 +25,8 @@ def normalize_city_name(dxy_province_name, dxy_city_name):
     ignore_list = ['外地来京人员', '未知']
     if dxy_city_name in ignore_list:
         return ''
+    if len(dxy_city_name)<1:
+       return '' 
 
     # 手动映射
     # 高德地图里没有两江新区，姑且算入渝北
@@ -58,7 +61,7 @@ def normalize_city_name(dxy_province_name, dxy_city_name):
     return normalized_name
 
 def load_dxy_data1():
-    url = 'https://3g.dxy.cn/newh5/view/pneumonia'
+    url = 'https://3g.dxy.cn/newh5/view/pneumonia?&_=%d'%int(time.time()*1000)
     raw_html = requests.get(url).content.decode('utf8')
     match = re.search('window.getListByCountryTypeService1 = (.*?)}catch', raw_html)
     raw_json = match.group(1)
@@ -66,7 +69,8 @@ def load_dxy_data1():
     return result
 
 def load_dxy_data2():
-    url = 'https://3g.dxy.cn/newh5/view/pneumonia'
+    url = 'https://3g.dxy.cn/newh5/view/pneumonia?&_=%d'%int(time.time()*1000)
+    print(url)
     raw_html = requests.get(url).content.decode('utf8')
     match = re.search('window.getListByCountryTypeService2 = (.*?)}catch', raw_html)
     raw_json = match.group(1)
@@ -92,6 +96,84 @@ def load_dxy_data():
     result2=load_dxy_data2()
     write_world(result1,result2)
 
+    
+def load_qq_data():
+    date_list=list()
+    confirm_list=list()
+    suspect_list=list()
+    dead_list=list()
+    heal_list=list()
+    date_list_=list()
+    confirm_list_=list()
+    suspect_list_=list()
+    dead_list_=list()
+    heal_list_=list()
+    url = 'https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5&callback=&_=%d'%int(time.time()*1000)
+    result=json.loads(requests.get(url=url).json()['data'])
+    for item in result['chinaDayList']:
+        date_list.append(item['date'])
+        confirm_list.append(item['confirm'])
+        suspect_list.append(item['suspect'])
+        dead_list.append(item['dead'])
+        heal_list.append(item['heal'])
+    for item in result['chinaDayAddList']:
+        date_list_.append(item['date'])
+        confirm_list_.append(item['confirm'])
+        suspect_list_.append(item['suspect'])
+        dead_list_.append(item['dead'])
+        heal_list_.append(item['heal'])
+    writer = open('2019nCov_data.js', 'w', encoding='utf8')
+    writer.write('const LAST_UPDATE = "')
+    writer.write(datetime.datetime.now(datetime.timezone(
+        datetime.timedelta(hours=8))).strftime('%Y.%m.%d-%H:%M:%S'))
+    writer.write('"; \r\n')
+    
+    date_str=['date_list']+date_list
+    confirm_str=['确诊']+confirm_list
+    suspect_str=['疑似']+suspect_list
+    dead_str=['死亡']+dead_list
+    heal_str=['治愈']+heal_list
+    print(str(date_str))    
+    writer.write("const DATA_2019 = [")
+    writer.write(str(date_str)+", \n") 
+    writer.write(str(confirm_str)+", \n") 
+    writer.write(str(suspect_str)+", \n") 
+    writer.write(str(dead_str)+", \n") 
+    writer.write(str(heal_str)) 
+    writer.write("]; \n")   
+
+    date_str=['date_list']+date_list_
+    confirm_str=['新增确诊']+confirm_list_
+    suspect_str=['新增疑似']+suspect_list_
+    dead_str=['新增死亡']+dead_list_
+    heal_str=['新增治愈']+heal_list_
+    print(str(date_str))    
+    writer.write("const DATA_ADD = [")
+    writer.write(str(date_str)+", \n") 
+    writer.write(str(confirm_str)+", \n") 
+    writer.write(str(suspect_str)+", \n") 
+    writer.write(str(dead_str)+", \n") 
+    writer.write(str(heal_str)) 
+    writer.write("]; \n")   
+    writer.close()
+    url = 'https://ncov.html5.qq.com/api/getCommunity'
+    result=requests.get(url=url).json()['community']
+    print(list(result.keys()))
+    writer = open('confirmed_places.js', 'w', encoding='utf8')
+    writer.write('const LAST_UPDATE = "')
+    writer.write(datetime.datetime.now(datetime.timezone(
+        datetime.timedelta(hours=8))).strftime('%Y.%m.%d-%H:%M:%S'))
+    writer.write('"; \r\n')
+    writer.write("const PLACES = [")
+    for key in list(result.keys()) :
+        if key in ['北京市', '上海市', '天津市', '重庆市']:
+            writer.write(str(result[key])+", \n")     
+    writer.write("]; \n") 
+    writer.close()
+    
+
+
+
 def write_result(result):
     writer = open('confirmed_datas.js', 'w', encoding='utf8')
     writer.write('const LAST_UPDATE = "')
@@ -111,6 +193,7 @@ def main():
     date_list = list() # 日期
     data_list=list()
     url = 'http://datanews.caixin.com/interactive/2020/iframe/pneumonia-new/data/pneumonia.csv'
+    url = 'http://datanews.caixin.com/interactive/2020/pneumonia-h5/data/pneumonia.csv'
     u_csv = requests.get(url).content.decode('utf8')
     writer = open('pneumonia.csv', 'w', encoding='utf8')
     writer.write(u_csv)
@@ -188,11 +271,14 @@ def main():
 
 
 if __name__ == '__main__':
+    load_qq_data()
     main()
     load_dxy_data()
     #清空任务
     schedule.clear()
     # #创建一个按秒间隔执行任务
-    schedule.every(30).minutes.do(main)   
+    schedule.every(2).hours.do(main) 
+    schedule.every(30).minutes.do(load_dxy_data)  
+    schedule.every(30).minutes.do(load_qq_data)
     while True:
         schedule.run_pending()
