@@ -5,6 +5,7 @@
 ## 数据来源
 * 财新网(http://datanews.caixin.com/interactive/2020/iframe/pneumonia-new/)
 * 丁香园(https://3g.dxy.cn/newh5/view/pneumonia/)
+* 腾讯网(https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5)
 * 孝感日报(http://www.xgrb.cn/)
 * 首都之窗(http://www.beijing.gov.cn/)
 
