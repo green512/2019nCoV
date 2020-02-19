@@ -2,7 +2,18 @@
 <html style="height: 100%">
    <head>
        <meta charset="utf-8">
-       <title>全国地级市新冠肺炎疫情热力图</title>       
+       <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+       <title>全国地级市新冠肺炎疫情热力图</title> 
+       <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?c94964d386a4205ea05ef308c7feeb4a";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>      
    </head>
    <body style="height: 100%; margin: 0">
        <div id="container" style="height: 100%"></div>
@@ -1558,7 +1569,7 @@ Date.prototype.format = function(fmt){
         var n=dates.length;
         var lastDate = dates[n-1];
         //ts 相减的差值
-        var ts = DateDiff(today, "2020/01/17");
+        var ts = DateDiff(lastDate, "2020/01/17");
         console.log(ts)
 
         for(var i=0; i<=ts; i++){
@@ -1599,7 +1610,7 @@ Date.prototype.format = function(fmt){
             {
                 title: {
                     text: '全国地级市新冠肺炎疫情热力图'+ '（' + LAST_UPDATE + '）',
-                    subtext: '返回全国疫情图',
+                    subtext: '返回全球疫情图',
                     sublink: 'index.html',
                     left: 'center',
                     textStyle: {
@@ -1607,24 +1618,28 @@ Date.prototype.format = function(fmt){
                     }
                 },
                 tooltip: {
-                    trigger: 'item'
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return '确诊 '+params.value[2] + ' 例 ';
+                    }
+
                 },
                 backgroundColor: '#404a59',
                 
                 visualMap: {
                     min: 0,
-                    max: 2500,
+                    max: 25000,
                     type: 'piecewise',
                     pieces: [
-                        {gt: 1000},            // (1000, Infinity]            
-                        {gt: 500, lte: 1000},  // (310, 1000]
-                        {gt: 100, lte: 500},   // (200, 300]
+                        {gt: 5000},            // (1000, Infinity]            
+                        {gt: 1000, lte: 5000},  // (310, 1000]
+                        {gt: 100, lte: 1000},   // (200, 300]
                         {gt: 10, lte: 100},       // (10, 200]
                         {ge: 1,lt: 10},                 // (-Infinity, 5)
                         {lte: 0}
                     ],
                     inRange: {
-                        color: ['#430c0e','#d94e5d','#eac736','#ece25c','#ffffff'].reverse()
+                        color: ['#cf0000','#ff4e5d','#eac736','#ece25c','#ffffff'].reverse()
                     },
                     textStyle: {
                         color: '#fff'
@@ -1662,14 +1677,22 @@ Date.prototype.format = function(fmt){
                 },
                 series: [{
                     name: '2019-nCoV',
-                    type: 'heatmap',
-                    pointSize: 6, // 设置 热力图 点 的大小
-                    blurSize: 2, // 设置点的 阴影半径
+                    type: 'scatter',
+                    pointSize: 4, // 设置 热力图 点 的大小
+                    blurSize: 1, // 设置点的 阴影半径
                     coordinateSystem: 'geo',
                     label: {
-                            show: true,
+                            formatter: '{b}',
+                            position: 'right',
+                            show: false,
                             color: 'rgb(249, 249, 249)'
                         },
+                    emphasis: {
+                        label: {
+                            show: true
+                        }
+                    },
+                    
                     data: convertDatas(DATAS,dataList[0])
                 }]
             }
@@ -1679,18 +1702,25 @@ Date.prototype.format = function(fmt){
         for (var i = 1; i < dataList2.length; i++) {
             option.options.push({
                 title: {
-                    text: '全国地级市新冠肺炎疫情' + dataList2[i] + '热力图',
+                    text: '全国地级市新冠肺炎疫情' + dataList2[i] + '时空图',
                 },
                 series: [{
                         name: '2019-nCoV '+ dataList2[i],
-                        type: 'heatmap',
-                        pointSize: 6, // 设置 热力图 点 的大小
-                        blurSize: 2, // 设置点的 阴影半径
+                        type: 'scatter',
+                        pointSize: 4, // 设置 热力图 点 的大小
+                        blurSize: 1, // 设置点的 阴影半径
                         coordinateSystem: 'geo',
                         label: {
-                                show: true,
+                                formatter: '{b}',
+                                position: 'right',
+                                show: false,
                                 color: 'rgb(249, 249, 249)'
                             },
+                        emphasis: {
+                            label: {
+                                show: true
+                            }
+                        },
                         data: convertDatas(DATAS,dataList[i])
                     }
                 ]
