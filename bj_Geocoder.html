@@ -53,14 +53,14 @@
 	var index = 0;
 	var myGeo = new BMap.Geocoder();
 	var adds = [
-		"朝阳区望京西园一区",
-        "房山区天瑞嘉园",
-        "朝阳区华腾园",
-        "海淀区观景园",
-        "大兴区玉璟园",
-        "朝阳区北苑一号院",
-        "东城区崇文门东大街6号楼",
-        "海淀区西二旗空研BD院"
+		"北京市朝阳区望京西园一区",
+        "北京市房山区天瑞嘉园",
+        "北京市朝阳区华腾园",
+        "北京市海淀区观景园",
+        "北京市大兴区玉璟园",
+        "北京市朝阳区北苑一号院",
+        "北京市东城区崇文门东大街6号楼",
+        "北京市海淀区西二旗空研BD院"
 	];
 	var province='北京市';
     function getData(){
@@ -68,15 +68,15 @@
         for(p in PLACES){         
             if (PLACES[p][province] ==null )
                 continue 
-            community=PLACES[p][province]  
+            communityp=PLACES[p][province]  
             district = Object.keys(PLACES[p][province])            
             for(let i = 0; i< district.length; i++){
-                let singleComm = community[district[i]];
+                let singleComm = communityp[district[i]];
                 for(let j = 0;j < singleComm.length; j++){
                     const {
-                        lng, lat, community: community2
+                        lng, lat, show_address: community2, full_address
                     } = singleComm[j];
-                    addrs.push({lng, lat, community: community2});
+                    addrs.push({lng, lat, show_address:community2,full_address });
                 }
             }
             //console.log(PLACES[p]['上海市']);
@@ -105,7 +105,7 @@
 				//document.getElementById("result").innerHTML +=  index + "," + add + "," + point.lng + "," + point.lat + "</br>";
 				var address = new BMap.Point(point.lng, point.lat);
 				
-				addshort=add//.substr(add.length-4,4)
+				addshort=add.substr(6,add.length-6)
 				addMarker(address,new BMap.Label(addshort,{offset:new BMap.Size(20,-10)}));
 			}
 		}, "北京市");
@@ -120,21 +120,21 @@
 		marker.setLabel(label);
 	}
 	var iadds =getData();
-		for (index=0; index < iadds.length; index++) {
-			var iadd = iadds[index];
-            addshort=iadd["community"]
-             
-            //var address = new BMap.Point(iadd["lng"],iadd["lat"]);          
-            //lable=new BMap.Label(addshort,{offset:new BMap.Size(20,-10)});
-			//addMarker(address,lable);
-			if (addshort !="" ){
-				adds.push(addshort)
-			}else{
-				var address = new BMap.Point(iadd["lng"],iadd["lat"]);          
-				lable=new BMap.Label(addshort,{offset:new BMap.Size(20,-10)});
-				addMarker(address,lable);
-			}
+	for (index=0; index < iadds.length; index++) {
+		var iadd = iadds[index];
+		addshort=iadd["full_address"]
+			
+		//var address = new BMap.Point(iadd["lng"],iadd["lat"]);          
+		//lable=new BMap.Label(addshort,{offset:new BMap.Size(20,-10)});
+		//addMarker(address,lable);
+		if (addshort !="" ){
+			adds.push(addshort)
+		}else{
+			var address = new BMap.Point(iadd["lng"],iadd["lat"]);          
+			lable=new BMap.Label(addshort,{offset:new BMap.Size(20,-10)});
+			addMarker(address,lable);
 		}
+	}
 	bdGEO();
 	var x=document.getElementById("result");
 	function getLocation()
